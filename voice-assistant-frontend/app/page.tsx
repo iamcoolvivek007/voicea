@@ -30,15 +30,23 @@ export default function Page() {
     // In real-world application, you would likely allow the user to specify their
     // own participant name, and possibly to choose from existing rooms to join.
 
-    const url = new URL(
-      process.env.NEXT_PUBLIC_CONN_DETAILS_ENDPOINT ?? "/api/connection-details",
-      window.location.origin
-    );
-    const response = await fetch(url.toString());
-    const connectionDetailsData: ConnectionDetails = await response.json();
+    try {
+      const url = new URL(
+        process.env.NEXT_PUBLIC_CONN_DETAILS_ENDPOINT ?? "/api/connection-details",
+        window.location.origin
+      );
+      const response = await fetch(url.toString());
+      if (!response.ok) {
+        throw new Error(await response.text() || "Failed to fetch connection details");
+      }
+      const connectionDetailsData: ConnectionDetails = await response.json();
 
-    await room.connect(connectionDetailsData.serverUrl, connectionDetailsData.participantToken);
-    await room.localParticipant.setMicrophoneEnabled(true);
+      await room.connect(connectionDetailsData.serverUrl, connectionDetailsData.participantToken);
+      await room.localParticipant.setMicrophoneEnabled(true);
+    } catch (error) {
+      console.error("Connection failed", error);
+      alert(`Connection failed: ${error instanceof Error ? error.message : String(error)}`);
+    }
   }, [room]);
 
   useEffect(() => {
