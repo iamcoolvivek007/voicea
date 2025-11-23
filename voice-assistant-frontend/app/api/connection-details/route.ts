@@ -9,6 +9,9 @@ const LIVEKIT_URL = process.env.NEXT_PUBLIC_LIVEKIT_URL;
 // don't cache the results
 export const revalidate = 0;
 
+/**
+ * Type definition for the connection details returned by the API.
+ */
 export type ConnectionDetails = {
   serverUrl: string;
   roomName: string;
@@ -16,6 +19,12 @@ export type ConnectionDetails = {
   participantToken: string;
 };
 
+/**
+ * GET handler for the connection-details API route.
+ * Generates a participant token and returns connection details for the LiveKit room.
+ *
+ * @returns {Promise<NextResponse>} JSON response containing connection details or an error message.
+ */
 export async function GET() {
   try {
     if (LIVEKIT_URL === undefined) {
@@ -55,6 +64,13 @@ export async function GET() {
   }
 }
 
+/**
+ * Helper function to create a participant token.
+ *
+ * @param {AccessTokenOptions} userInfo - Options for the access token (e.g., identity).
+ * @param {string} roomName - The name of the room the participant will join.
+ * @returns {Promise<string>} A Promise that resolves to the JWT token string.
+ */
 function createParticipantToken(userInfo: AccessTokenOptions, roomName: string) {
   const at = new AccessToken(API_KEY, API_SECRET, {
     ...userInfo,

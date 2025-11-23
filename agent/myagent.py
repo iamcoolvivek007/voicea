@@ -4,7 +4,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 from livekit.agents import JobContext, WorkerOptions, cli
 from livekit.agents.voice import Agent, AgentSession
-from livekit.plugins import openai, silero, groq
+from livekit.plugins import openai, silero, groq, google
 from livekit.agents import ChatContext, ChatMessage
 from sentence_transformers import SentenceTransformer
 import faiss
@@ -39,7 +39,16 @@ else:
     logger.warning("No documents found in docs directory. RAG will return empty context.")
 
 async def rag_lookup(query: str) -> str:
-    """Perform RAG lookup for a given query"""
+    """
+    Perform a Retrieval-Augmented Generation (RAG) lookup for a given query.
+
+    Args:
+        query (str): The search query to find relevant documents for.
+
+    Returns:
+        str: A string containing concatenated relevant document snippets separated by separators,
+             or an empty string if no documents are found.
+    """
     loop = asyncio.get_running_loop()
 
     q_emb = await loop.run_in_executor(None, lambda: embed_model.encode([query]))
@@ -54,9 +63,26 @@ async def rag_lookup(query: str) -> str:
     return ctx
 
 class LocalAgent(Agent):
+    """
+    A custom Voice Agent class that integrates STT, LLM, TTS, and VAD services.
+
+    This agent handles voice interactions, logging metrics for each component,
+    and performing RAG lookups to enhance user queries.
+    """
     def __init__(self) -> None:
+        """
+        Initialize the LocalAgent with specific service configurations.
+
+        Sets up:
+        - STT: OpenAI compatible (Whisper)
+        - LLM: OpenAI compatible (Ollama)
+        - TTS: Groq compatible (Kokoro)
+        - VAD: Silero
+
+        Also registers event listeners for metric collection.
+        """
         stt = openai.STT(base_url="http://whisper:80/v1", model="Systran/faster-whisper-small")
-        llm = openai.LLM(base_url="http://ollama:11434/v1", model="gemma3:4b", timeout=30)
+        llm = google.LLM(model="gemini-2.0-flash-exp")
         tts = groq.TTS(base_url="http://kokoro:8880/v1", model="kokoro", voice="af_nova")
         vad_inst = silero.VAD.load()
         super().__init__(
@@ -97,6 +123,13 @@ class LocalAgent(Agent):
         vad_inst.on("metrics_collected", vad_metrics_wrapper)
 
     async def on_llm_metrics_collected(self, metrics):
+        """
+        Handle and log LLM metrics.
+
+        Args:
+            metrics: The metrics object containing details about the LLM request
+                     (token usage, duration, timestamps, etc.).
+        """
         logger.info(f"LLM Metrics: {{" +
             f"'type': {metrics.type}, " +
             f"'label': {metrics.label}, " +
@@ -112,6 +145,13 @@ class LocalAgent(Agent):
             "}")
 
     async def on_stt_metrics_collected(self, metrics):
+        """
+        Handle and log STT metrics.
+
+        Args:
+            metrics: The metrics object containing details about the STT request
+                     (duration, speech_id, error status, etc.).
+        """
         logger.info(f"STT Metrics: {{" +
             f"'type': {metrics.type}, " +
             f"'label': {metrics.label}, " +
@@ -125,6 +165,13 @@ class LocalAgent(Agent):
             "}")
 
     async def on_eou_metrics_collected(self, metrics):
+        """
+        Handle and log End of Utterance (EOU) metrics.
+
+        Args:
+            metrics: The metrics object containing details about EOU detection
+                     (delays, timestamps, etc.).
+        """
         logger.info(f"EOU Metrics: {{" +
             f"'type': {metrics.type}, " +
             f"'label': {metrics.label}, " +
@@ -136,6 +183,13 @@ class LocalAgent(Agent):
             "}")
 
     async def on_tts_metrics_collected(self, metrics):
+        """
+        Handle and log TTS metrics.
+
+        Args:
+            metrics: The metrics object containing details about the TTS request
+                     (ttfb, duration, audio duration, character count, etc.).
+        """
         logger.info(f"TTS Metrics: {{" +
             f"'type': {metrics.type}, " +
             f"'label': {metrics.label}, " +
@@ -152,11 +206,28 @@ class LocalAgent(Agent):
             "}")
 
     async def on_vad_event(self, event):
+        """
+        Handle VAD (Voice Activity Detection) events.
+
+        Args:
+            event: The VAD event object.
+        """
         None
 
     async def on_user_turn_completed(
         self, turn_ctx: ChatContext, new_message: ChatMessage,
     ) -> None:
+        """
+        Callback triggered when a user finishes a turn (speaks a message).
+
+        This method performs a RAG lookup based on the user's message and,
+        if relevant content is found, injects it into the chat context
+        as additional information for the agent to use in its response.
+
+        Args:
+            turn_ctx (ChatContext): The context of the current chat turn.
+            new_message (ChatMessage): The message that the user just completed.
+        """
         rag_content = await rag_lookup(new_message.text_content)
         if rag_content:
             turn_ctx.add_message(
@@ -166,6 +237,14 @@ class LocalAgent(Agent):
             logger.info(f"Added RAG content to chat context: {rag_content}")
 
 async def entrypoint(ctx: JobContext):
+    """
+    The main entrypoint for the worker job.
+
+    Connects to the job context, creates an AgentSession, and starts the LocalAgent.
+
+    Args:
+        ctx (JobContext): The context for the current job, provided by LiveKit.
+    """
     await ctx.connect()
 
     session = AgentSession()

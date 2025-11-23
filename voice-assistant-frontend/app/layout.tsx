@@ -12,6 +12,14 @@ export const metadata: Metadata = {
   title: "Voice Assistant",
 };
 
+/**
+ * RootLayout is the main layout component that wraps the entire application.
+ * It sets up the HTML structure, applies the global font, and includes the body.
+ *
+ * @param {Object} props - The properties for the component.
+ * @param {React.ReactNode} props.children - The child components to be rendered within the layout.
+ * @returns {JSX.Element} The rendered root HTML structure.
+ */
 export default function RootLayout({
   children,
 }: Readonly<{

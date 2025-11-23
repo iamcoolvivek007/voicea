@@ -1,6 +1,12 @@
 import useCombinedTranscriptions from "@/hooks/useCombinedTranscriptions";
 import * as React from "react";
 
+/**
+ * TranscriptionView displays a scrollable list of transcriptions from the conversation.
+ * It automatically scrolls to the bottom when new transcriptions are added.
+ *
+ * @returns {JSX.Element} The rendered TranscriptionView component.
+ */
 export default function TranscriptionView() {
   const combinedTranscriptions = useCombinedTranscriptions();
   const containerRef = React.useRef<HTMLDivElement>(null);

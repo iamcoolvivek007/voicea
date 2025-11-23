@@ -17,6 +17,12 @@ import { Room, RoomEvent } from "livekit-client";
 import { useCallback, useEffect, useState } from "react";
 import type { ConnectionDetails } from "./api/connection-details/route";
 
+/**
+ * Page component is the main entry point for the voice assistant interface.
+ * It handles the Room connection state and renders the Voice Assistant UI.
+ *
+ * @returns {JSX.Element} The rendered Page component.
+ */
 export default function Page() {
   const [room] = useState(new Room());
 
@@ -60,6 +66,13 @@ export default function Page() {
   );
 }
 
+/**
+ * SimpleVoiceAssistant handles the UI switching between connected and disconnected states.
+ *
+ * @param {Object} props - The component props.
+ * @param {() => void} props.onConnectButtonClicked - Callback function when the connect button is clicked.
+ * @returns {JSX.Element} The rendered SimpleVoiceAssistant component.
+ */
 function SimpleVoiceAssistant(props: { onConnectButtonClicked: () => void }) {
   const { state: agentState } = useVoiceAssistant();
 
@@ -110,6 +123,11 @@ function SimpleVoiceAssistant(props: { onConnectButtonClicked: () => void }) {
   );
 }
 
+/**
+ * AgentVisualizer displays the visual representation of the agent (video or audio bar).
+ *
+ * @returns {JSX.Element} The rendered AgentVisualizer component.
+ */
 function AgentVisualizer() {
   const { state: agentState, videoTrack, audioTrack } = useVoiceAssistant();
 
@@ -133,6 +151,13 @@ function AgentVisualizer() {
   );
 }
 
+/**
+ * ControlBar provides controls for the user to interact with the voice assistant session.
+ *
+ * @param {Object} props - The component props.
+ * @param {() => void} props.onConnectButtonClicked - Callback function when the connect button is clicked.
+ * @returns {JSX.Element} The rendered ControlBar component.
+ */
 function ControlBar(props: { onConnectButtonClicked: () => void }) {
   const { state: agentState } = useVoiceAssistant();
 
@@ -172,6 +197,11 @@ function ControlBar(props: { onConnectButtonClicked: () => void }) {
   );
 }
 
+/**
+ * Callback for handling media device failures.
+ *
+ * @param {Error} error - The error object returned by the media device failure event.
+ */
 function onDeviceFailure(error: Error) {
   console.error(error);
   alert(
