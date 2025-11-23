@@ -25,22 +25,6 @@ services:
     networks:
       - agent_network
 
-  ollama:
-    build:
-      context: ./ollama
-    ports:
-      - "11434:11434"
-    volumes:
-      - ollama:/root/.ollama
-    networks:
-      - agent_network
-    deploy:
-      resources:
-        limits:
-          memory: 8G
-        reservations:
-          memory: 6G
-
   agent:
     build:
       context: ./agent
@@ -51,11 +35,11 @@ services:
       - LIVEKIT_AGENT_PORT=7880
       - OPENAI_API_KEY=no-key-needed
       - GROQ_API_KEY=no-key-needed
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
     depends_on:
       - livekit
       - kokoro
       - whisper
-      - ollama
     networks:
       - agent_network
 
@@ -76,7 +60,6 @@ services:
       - agent_network
 
 volumes:
-  ollama:
   whisper-data:
 
 networks:

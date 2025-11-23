@@ -4,7 +4,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 from livekit.agents import JobContext, WorkerOptions, cli
 from livekit.agents.voice import Agent, AgentSession
-from livekit.plugins import openai, silero, groq
+from livekit.plugins import openai, silero, groq, google
 from livekit.agents import ChatContext, ChatMessage
 from sentence_transformers import SentenceTransformer
 import faiss
@@ -56,7 +56,7 @@ async def rag_lookup(query: str) -> str:
 class LocalAgent(Agent):
     def __init__(self) -> None:
         stt = openai.STT(base_url="http://whisper:80/v1", model="Systran/faster-whisper-small")
-        llm = openai.LLM(base_url="http://ollama:11434/v1", model="gemma3:4b", timeout=30)
+        llm = google.LLM(model="gemini-2.0-flash-exp")
         tts = groq.TTS(base_url="http://kokoro:8880/v1", model="kokoro", voice="af_nova")
         vad_inst = silero.VAD.load()
         super().__init__(
