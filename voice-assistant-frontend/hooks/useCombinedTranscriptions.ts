@@ -2,6 +2,15 @@ import { useTrackTranscription, useVoiceAssistant } from "@livekit/components-re
 import { useMemo } from "react";
 import useLocalMicTrack from "./useLocalMicTrack";
 
+/**
+ * useCombinedTranscriptions is a custom hook that aggregates transcriptions from both the agent and the user.
+ *
+ * It retrieves agent transcriptions from the `useVoiceAssistant` hook and user transcriptions
+ * from the `useTrackTranscription` hook (using the local microphone track). It then combines
+ * and sorts them by reception time to provide a chronological conversation history.
+ *
+ * @returns {Array<object>} An array of transcription segments, each with an added `role` property ("assistant" or "user").
+ */
 export default function useCombinedTranscriptions() {
   const { agentTranscriptions } = useVoiceAssistant();
 

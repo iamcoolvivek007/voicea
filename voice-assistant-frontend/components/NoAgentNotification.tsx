@@ -6,7 +6,15 @@ interface NoAgentNotificationProps extends React.PropsWithChildren<object> {
 }
 
 /**
- * Renders some user info when no agent connects to the room after a certain time.
+ * Renders a notification when no agent connects to the room after a certain time.
+ *
+ * This component monitors the agent's connection state. If the state remains "connecting"
+ * for longer than the specified timeout (10s), it displays a warning message suggesting
+ * that the agent might not be running or configured correctly.
+ *
+ * @param {NoAgentNotificationProps} props - The component props.
+ * @param {AgentState} props.state - The current connection state of the agent.
+ * @returns {JSX.Element | null} The notification UI or null if not shown.
  */
 export function NoAgentNotification(props: NoAgentNotificationProps) {
   const timeToWaitMs = 10_000;
