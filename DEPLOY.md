@@ -39,7 +39,7 @@ Before deploying, ensure the following ports are open on your VPS firewall (e.g.
     | `NEXT_PUBLIC_LIVEKIT_URL` | **Public** URL of your LiveKit server (wss). | `wss://livekit.yourdomain.com` |
     | `NEXT_PUBLIC_LIVEKIT_API_KEY`| Same as `LIVEKIT_API_KEY` (for frontend). | `devkey` |
 
-    *   **Build Variables**: Ensure `NEXT_PUBLIC_LIVEKIT_URL` is available during the **Build** phase (Coolify allows setting Build Args/Envs). This is required for the Next.js frontend to know where to connect.
+    *   **IMPORTANT**: `NEXT_PUBLIC_LIVEKIT_URL` must be the **publicly accessible URL** of your LiveKit server (e.g., `wss://livekit.yourdomain.com`). Do not use `localhost` or internal Docker URLs like `ws://livekit:7880`, as the user's browser needs to connect to this address directly.
 
 3.  **Domains**:
     *   **Frontend**: Configure a domain (e.g., `app.yourdomain.com`) pointing to port `3000`.
