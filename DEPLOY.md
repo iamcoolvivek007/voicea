@@ -25,7 +25,7 @@ Before deploying, ensure the following ports are open on your VPS firewall (e.g.
     *   Source: **Git Repository**.
     *   Repository URL: `<your-repo-url>`
     *   Branch: `main` (or your branch name).
-    *   Docker Compose File: `coolify.yaml` (Important! Do not use default `docker-compose.yml`).
+    *   Docker Compose File: `docker-compose.yml` (Default).
 
 2.  **Environment Variables**:
     You must set the following variables in Coolify for the service:
